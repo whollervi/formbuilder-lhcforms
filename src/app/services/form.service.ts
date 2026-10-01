@@ -1715,6 +1715,14 @@ export class FormService {
    * @return - A promise which resolves to version number loaded.
    */
   async loadLFormsLib(): Promise<string> {
+    const configured = FormService.getConfiguredLFormsSource();
+    if (configured) {
+      return loadLForms(configured.version, undefined, configured.source).then(() => configured.version)
+        .catch((error: any) => {
+          console.error(`lforms-loader.loadLForms() failed to load LHC-Forms from ${configured.source}`);
+          throw new Error(error?.message || `Failed to load LHC-Forms from ${configured.source}`);
+        });
+    }
     return getSupportedLFormsVersions().then((versions: string []) => {
       const latestVersion = versions[0] || '34.3.0';
       return loadLForms(latestVersion).then(() => latestVersion).catch((error: any) => {
@@ -1725,6 +1733,20 @@ export class FormService {
       console.error(`lforms-loader.getSupportedLFormsVersions() failed: ${error.message}`);
       throw new Error(error);
     });
+  }
+
+  /**
+   * A deployment can serve its own copy of LHC-Forms instead of loading the latest version from the
+   * NLM server, by adding to index.html:
+   *   <meta name="lforms-source" content="(base URL of the LHC-Forms files, e.g. /lforms/44.1.0)">
+   *   <meta name="lforms-version" content="(its version, e.g. 44.1.0)">
+   * @param doc - The document to read the meta tags from.
+   * @return - The base URL and version, or null if not configured.
+   */
+  static getConfiguredLFormsSource(doc: Document = document): {source: string, version: string} | null {
+    const source = doc.querySelector('meta[name="lforms-source"]')?.getAttribute('content')?.trim().replace(/\/+$/, '');
+    const version = doc.querySelector('meta[name="lforms-version"]')?.getAttribute('content')?.trim();
+    return source && version ? {source, version} : null;
   }
 
   /**

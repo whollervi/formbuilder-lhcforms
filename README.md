@@ -87,6 +87,24 @@ cp .env .env.local
 
 The npm scripts automatically load `.env` plus `.env.local` (when present), with `.env.local` taking precedence.
 
+### Serving LHC-Forms from your own server
+
+By default, the form builder loads the latest version of LHC-Forms from
+https://lhcforms-static.nlm.nih.gov/lforms-versions/ at run time. To use a fixed copy served by your own
+server instead (for example a version that matches the forms renderer of your application), add these tags
+to the `<head>` of `index.html` of the built application:
+
+```html
+<meta name="lforms-source" content="/path/to/lforms-44.1.0">
+<meta name="lforms-version" content="44.1.0">
+```
+
+`lforms-source` is the base URL of the extracted
+[LHC-Forms release](https://lhcforms-static.nlm.nih.gov/lforms-versions/) (or of `dist/lforms` of the
+`lforms` npm package). It must contain `webcomponent/styles.css`, `webcomponent/assets/lib/zone.min.js`,
+`webcomponent/lhc-forms.js` and `fhir/lformsFHIRAll.min.js`. Use a recent LHC-Forms version; the form builder
+is developed and tested with the latest one.
+
 ## **Contributing**
   - If you plan to contribute new functionality, it is important to coordinate with the maintainers to ensure proper integration and to avoid duplicating efforts. Reach out to the maintainers for guidance on contributing.
 

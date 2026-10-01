@@ -303,6 +303,33 @@ describe('FormService', () => {
     }
   });
 
+  describe('configured LHC-Forms source', () => {
+    function docWithMeta(meta: {[name: string]: string}): Document {
+      const doc = document.implementation.createHTMLDocument('test');
+      Object.entries(meta).forEach(([name, content]) => {
+        const tag = doc.createElement('meta');
+        tag.setAttribute('name', name);
+        tag.setAttribute('content', content);
+        doc.head.appendChild(tag);
+      });
+      return doc;
+    }
+
+    it('should return the source and version from the meta tags', () => {
+      const doc = docWithMeta({'lforms-source': ' /fhir/r4/forms/lforms-44.1.0/ ', 'lforms-version': '44.1.0'});
+      expect(FormService.getConfiguredLFormsSource(doc))
+        .toEqual({source: '/fhir/r4/forms/lforms-44.1.0', version: '44.1.0'});
+    });
+
+    it('should return null if the source or the version is missing', () => {
+      expect(FormService.getConfiguredLFormsSource(docWithMeta({}))).toBeNull();
+      expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '/lforms'}))).toBeNull();
+      expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-version': '44.1.0'}))).toBeNull();
+      expect(FormService.getConfiguredLFormsSource(docWithMeta({'lforms-source': '', 'lforms-version': '44.1.0'})))
+        .toBeNull();
+    });
+  });
+
   it('should report an incompatible opener notification without repeating the dialog', () => {
     const questionnaire = {
       resourceType: 'Questionnaire',
